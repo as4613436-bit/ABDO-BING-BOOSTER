@@ -1,1 +1,39 @@
+name: Build ABDO Ping Booster
 
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get project
+        uses: actions/checkout@v4
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Extract project
+        run: |
+          unzip -o ABDO-Ping-Booster-v1.zip -d app-source
+
+      - name: Build APK
+        run: |
+          GRADLEW=$(find app-source -name gradlew -type f | head -n 1)
+          test -n "$GRADLEW"
+          cd "$(dirname "$GRADLEW")"
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ABDO-Ping-Booster
+          path: app-source/**/build/outputs/apk/debug/*.apk
